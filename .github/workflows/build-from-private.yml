@@ -1,0 +1,75 @@
+# .github/workflows/build-from-private.yml
+name: Build Signed APK and Release
+
+on:
+  push:
+    tags:
+      - 'v*' # triggers on version tags like v1.0.0
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+
+      - name: Clone private Flutter app repo
+        env:
+          TOKEN: ${{ secrets.SECRET_PAT }}
+        run: |
+          git clone https://x-access-token:${TOKEN}@github.com/Notiverse/notiverse_app.git app
+          cd app
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.29.3'
+
+      - name: Install dependencies
+        run: |
+          cd app
+          flutter pub get
+
+      - name: Decode keystore from base64
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > app/android/my-release-key.jks
+
+      - name: Create key.properties file
+        run: |
+          echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" > app/android/key.properties
+          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> app/android/key.properties
+          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> app/android/key.properties
+          echo "storeFile=my-release-key.jks" >> app/android/key.properties
+
+      - name: Build signed APK
+        run: |
+          cd app
+          bash scripts/build.sh apk
+
+      - name: Rename APK to include version
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          APK_NAME="Notiverse-${TAG_NAME}.apk"
+          mv app/build/app/outputs/flutter-apk/app-release.apk "app/build/app/outputs/flutter-apk/${APK_NAME}"
+
+      - name: Update latest.json
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          echo "{\n  \"version\": \"${TAG_NAME}\",\n  \"url\": \"https://github.com/${{ github.repository }}/releases/download/${TAG_NAME}/Notiverse-${TAG_NAME}.apk\"\n}" > latest.json
+
+      - name: Commit latest.json
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add latest.json
+          git commit -m "Update latest.json for ${TAG_NAME}"
+          git push
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: app/build/app/outputs/flutter-apk/Notiverse-*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.SECRET_PAT }}
