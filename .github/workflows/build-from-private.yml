@@ -19,7 +19,7 @@ jobs:
         env:
           TOKEN: ${{ secrets.SECRET_PAT }}
         run: |
-          git clone https://x-access-token:${TOKEN}@github.com/Notiverse/notiverse_app.git app
+          git clone --recursive https://x-access-token:${TOKEN}@github.com/Notiverse/notiverse_app.git app
           cd app
 
       - name: Setup Flutter
