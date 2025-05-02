@@ -21,6 +21,7 @@ jobs:
         run: |
           git clone --recursive https://x-access-token:${TOKEN}@github.com/Notiverse/notiverse_app.git app
           cd app
+          git checkout production
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -57,7 +58,10 @@ jobs:
       - name: Update latest.json
         run: |
           TAG_NAME=${GITHUB_REF#refs/tags/}
-          echo "{\n  \"version\": \"${TAG_NAME}\",\n  \"url\": \"https://github.com/${{ github.repository }}/releases/download/${TAG_NAME}/Notiverse-${TAG_NAME}.apk\"\n}" > latest.json
+          APK_NAME="Notiverse-${TAG_NAME}.apk"
+          APK_PATH="app/build/app/outputs/flutter-apk/${APK_NAME}"
+          SHA256=$(sha256sum "$APK_PATH" | awk '{ print $1 }')
+          echo "{\n  \"version\": \"${TAG_NAME}\",\n  \"url\": \"https://github.com/${{ github.repository }}/releases/download/${TAG_NAME}/${APK_NAME}\",\n  \"sha256\": \"${SHA256}\"\n}" > latest.json
 
       - name: Commit latest.json
         run: |
