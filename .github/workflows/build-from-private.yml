@@ -93,6 +93,8 @@ jobs:
           EOF
 
       - name: Commit latest.json
+        env:
+          TOKEN: ${{ secrets.SECRET_PAT }}
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
@@ -110,7 +112,8 @@ jobs:
           # Commit and push
           git add latest.json
           git commit -m "Update latest.json for ${TAG_NAME}"
-          git push origin main
+          # git push origin main
+          git push https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git main
 
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
