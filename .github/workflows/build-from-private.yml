@@ -5,6 +5,8 @@ on:
   push:
     tags:
       - 'v*' # triggers on version tags like v1.0.0
+permissions:
+  contents: write  # Enables pushing commits, creating releases, etc.
 
 jobs:
   build:
