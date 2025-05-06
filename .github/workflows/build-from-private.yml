@@ -95,10 +95,11 @@ jobs:
       - name: Commit latest.json
         env:
           TOKEN: ${{ secrets.SECRET_PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
-          
+
           # Save the generated latest.json
           cp latest.json /tmp/latest.json
           
@@ -112,8 +113,7 @@ jobs:
           # Commit and push
           git add latest.json
           git commit -m "Update latest.json for ${TAG_NAME}"
-          # git push origin main
-          git push https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git main
+          git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git main
 
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
