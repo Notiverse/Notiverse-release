@@ -53,15 +53,41 @@ jobs:
         run: |
           TAG_NAME=${GITHUB_REF#refs/tags/}
           APK_NAME="Notiverse-${TAG_NAME}.apk"
-          mv app/build/app/outputs/flutter-apk/app-release.apk "app/build/app/outputs/flutter-apk/${APK_NAME}"
+          mv app/build/app/outputs/flutter-apk/app-prod-release.apk "app/build/app/outputs/flutter-apk/${APK_NAME}"
 
       - name: Update latest.json
         run: |
           TAG_NAME=${GITHUB_REF#refs/tags/}
           APK_NAME="Notiverse-${TAG_NAME}.apk"
           APK_PATH="app/build/app/outputs/flutter-apk/${APK_NAME}"
+
+          # Remove 'v' prefix from version for latest.json
+          VERSION=${TAG_NAME#v}
+          
+          # Get SHA256 hash
           SHA256=$(sha256sum "$APK_PATH" | awk '{ print $1 }')
-          echo "{\n  \"version\": \"${TAG_NAME}\",\n  \"url\": \"https://github.com/${{ github.repository }}/releases/download/${TAG_NAME}/${APK_NAME}\",\n  \"sha256\": \"${SHA256}\"\n}" > latest.json
+          
+          # Get APK file size in MB (rounded to 2 decimal places)
+          SIZE_BYTES=$(stat -c%s "$APK_PATH")
+          SIZE_MB=$(echo "scale=2; $SIZE_BYTES/1048576" | bc)
+          
+          # Get current date in ISO format
+          RELEASE_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          
+          # Get signing key fingerprint
+          KEY_FINGERPRINT=$(keytool -list -v -keystore app/android/my-release-key.jks -alias ${{ secrets.KEY_ALIAS }} -storepass ${{ secrets.KEYSTORE_PASSWORD }} | grep "SHA256" | head -1 | awk '{print $2}')
+          
+          # Create JSON with all attributes
+          cat > latest.json << EOF
+          {
+            "version": "${VERSION}",
+            "url": "https://github.com/${{ github.repository }}/releases/download/${TAG_NAME}/${APK_NAME}",
+            "sha256": "${SHA256}",
+            "size": "${SIZE_MB}MB",
+            "releaseDate": "${RELEASE_DATE}",
+            "keyFingerprint": "${KEY_FINGERPRINT}"
+          }
+          EOF
 
       - name: Commit latest.json
         run: |
