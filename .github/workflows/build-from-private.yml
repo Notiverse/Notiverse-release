@@ -35,7 +35,8 @@ jobs:
 
       - name: Decode keystore from base64
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > app/android/my-release-key.jks
+          mkdir -p app/android/app
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > app/android/app/my-release-key.jks
 
       - name: Create key.properties file
         run: |
