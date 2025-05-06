@@ -123,3 +123,16 @@ jobs:
           files: app/build/app/outputs/flutter-apk/Notiverse-*.apk
         env:
           GITHUB_TOKEN: ${{ secrets.SECRET_PAT }}
+
+      # Update the "Upload to GitHub Release" step
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: app/build/app/outputs/flutter-apk/Notiverse-*.apk
+          tag_name: ${{ github.ref_name }}  # Explicitly specify the tag name
+          name: ${{ github.ref_name }}     # Use the tag as the release name
+          draft: false                    # Ensure it's not a draft release
+          prerelease: false               # Ensure it's not marked as prerelease
+          append_body: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Use the built-in token
