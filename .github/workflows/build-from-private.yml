@@ -94,11 +94,23 @@ jobs:
 
       - name: Commit latest.json
         run: |
+          # Get the default branch name
+          DEFAULT_BRANCH=$(git remote show origin | grep 'HEAD branch' | cut -d' ' -f5)
+          
           git config user.name github-actions
           git config user.email github-actions@github.com
+          
+          # Checkout the default branch
+          git fetch origin
+          git checkout $DEFAULT_BRANCH
+          
+          # Update the latest.json
+          cp ../latest.json ./latest.json
+          
+          # Commit and push
           git add latest.json
           git commit -m "Update latest.json for ${TAG_NAME}"
-          git push
+          git push origin $DEFAULT_BRANCH
 
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
