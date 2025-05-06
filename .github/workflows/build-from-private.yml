@@ -74,9 +74,11 @@ jobs:
           
           # Get current date in ISO format
           RELEASE_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-          
-          # Get signing key fingerprint
-          KEY_FINGERPRINT=$(keytool -list -v -keystore app/android/my-release-key.jks -alias ${{ secrets.KEY_ALIAS }} -storepass ${{ secrets.KEYSTORE_PASSWORD }} | grep "SHA256" | head -1 | awk '{print $2}')
+
+          ALIAS="${{ secrets.KEY_ALIAS }}"
+          STOREPASS="${{ secrets.KEYSTORE_PASSWORD }}"
+          KEY_FINGERPRINT=$(keytool -list -v -keystore app/android/my-release-key.jks -alias "$ALIAS" -storepass "$STOREPASS" | grep "SHA256:" | cut -d ":" -f 2- | xargs)
+    
           
           # Create JSON with all attributes
           cat > latest.json << EOF
