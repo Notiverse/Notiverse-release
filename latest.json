@@ -1,4 +1,8 @@
 {
-  "version": "1.0.0",
-  "url": "https://github.com/Notiverse/Notiverse-release/releases/download/v1.0.0/Notiverse-v1.0.0.apk"
+  "version": "0.9.0",
+  "url": "https://github.com/Notiverse/Notiverse-release/releases/download/v0.9.0/Notiverse-v0.9.0.apk",
+  "sha256": "fda8b1ce1452b9e208af4be03c9134518a81f7bbd0467b82b592ae48fa1b2d72",
+  "size": "39.20MB",
+  "releaseDate": "2025-05-06T11:59:03Z",
+  "keyFingerprint": ""
 }
